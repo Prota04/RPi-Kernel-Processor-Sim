@@ -485,11 +485,15 @@ instruction *parse_assembly(const char *fileName, size_t *num_instr, char ***ins
                 if (!(*instruction_text)[num_instructions])
                 {
                     perror("malloc\n");
+                    free(line_wo_newline); // Obezbijeđeno oslobađanje u slučaju greške
                     fclose(file);
                     return NULL;
                 }
 
                 strcpy((*instruction_text)[num_instructions], line_wo_newline);
+                
+                // DODATO: Oslobađanje stringa koji je alociran unutar remove_newline
+                free(line_wo_newline);
 
                 // 5. Pass the comment-stripped copy to your parser 
                 // (Assuming parse_line doesn't need the comments)
@@ -512,6 +516,13 @@ instruction *parse_assembly(const char *fileName, size_t *num_instr, char ***ins
     instructions[num_instructions++] = halt_instr; // Add a HALT instruction at the end of the instructions array
 
     *num_instr = num_instructions;
+
+    // Oslobađanje cjelokupne heš tabele prije izlaska iz funkcije
+    label_address *current_label, *tmp;
+    HASH_ITER(hh, labels, current_label, tmp) {
+        HASH_DEL(labels, current_label);
+        free(current_label);
+    }
 
     return instructions; // Return the array of parsed instructions
 }

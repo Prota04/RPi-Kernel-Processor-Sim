@@ -29,6 +29,8 @@ int main(int argc, char *argv[])
     }
     free(instruction_text);
 
+    free(instructions);
+
     run_cache_sim();
 
     return 0;
