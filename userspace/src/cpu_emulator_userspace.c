@@ -39,35 +39,44 @@ static instruction fetch_next(uint64_t PC)
     return (instruction){operand2, operand1, opcode, mode};
 }
 
-int run(const char *chrdev, char **instruction_text, int count)
+int run(char **instruction_text, int count)
 {
-    char path[64];
-
-    strcpy(path, "/dev/");
-    strcat(path, chrdev);
-    
-    int fd;
-    fd = open(path, O_RDWR);
-    if (fd < 0)
+    int fd_cpu_emulator, fd_cache_sim;
+    fd_cpu_emulator = open("/dev/cpu_emulator", O_RDWR);
+    if (fd_cpu_emulator < 0)
     {
-        perror("Character device nije pronadjen!\n");
-        return fd;
+        perror("Character device 'cpu_emulator' nije pronadjen!\n");
+        return fd_cpu_emulator;
+    }
+
+    fd_cache_sim = open("/dev/mem_trace", O_WRONLY);
+    if (fd_cache_sim < 0)
+    {
+        perror("Character device 'mem_trace' nije pronadjen!\n");
+        return fd_cache_sim;
     }
 
     write_value write_buf = {fetch_next(0), 0, 1};
     read_value read_buf = {0};
+
+    mem_access access = {0}; //prva instrukcija na adresi 0x0000000000000000
+    if (write(fd_cache_sim, &access, sizeof(mem_access)) < 0)
+    {
+        printf("Provjeri kernel logove, error code: %d\n", errno);
+    }
+
     int i;
     while (1)
     {
         i = read_buf.pc / INSTR_SIZE;
 
-        if (write(fd, &write_buf, sizeof(write_value)) < 0)
+        if (write(fd_cpu_emulator, &write_buf, sizeof(write_value)) < 0)
         {
             printf("Provjeri kernel logove, error code: %d\n", errno);
             break;
         }
 
-        if (read(fd, &read_buf, sizeof(read_value)) < 0)
+        if (read(fd_cpu_emulator, &read_buf, sizeof(read_value)) < 0)
         {
             printf("Provjeri kernel logove, error code: %d\n", errno);
             break;
@@ -83,8 +92,6 @@ int run(const char *chrdev, char **instruction_text, int count)
         switch (read_buf.exec_return)
         {
         case EXEC_SUCCESS:
-            write_buf.instruction = fetch_next(read_buf.pc);
-
             break;
         case EXEC_HALT:
             goto end;
@@ -92,9 +99,11 @@ int run(const char *chrdev, char **instruction_text, int count)
             write_buf.is_instruction = 0;
             read_from_memory(read_buf.mem_addr, &write_buf.val);
 
-            write(fd, &write_buf, sizeof(write_value));
+            write(fd_cpu_emulator, &write_buf, sizeof(write_value));
 
-            write_buf.instruction = fetch_next(read_buf.pc);
+            access.addr = read_buf.mem_addr;
+            access.type = 0;
+            write(fd_cache_sim, &access, sizeof(mem_access));
 
             write_buf.is_instruction = 1;
 
@@ -102,22 +111,31 @@ int run(const char *chrdev, char **instruction_text, int count)
         case EXEC_PENDING_MEM_WRITE:
             write_to_memory(read_buf.mem_addr, read_buf.val);
 
-            write_buf.instruction = fetch_next(read_buf.pc);
+            access.addr = read_buf.mem_addr;
+            access.type = 1;
+            write(fd_cache_sim, &access, sizeof(mem_access));
 
             break;
         case EXEC_PENDING_MMIO_READ:
             printf("Input button is %spressed\n", read_buf.val == 1 ? "" : "not ");
-
-            write_buf.instruction = fetch_next(read_buf.pc);
 
             break;
         default:
             printf("Nevalidan exec kod!\n");
             return -1;
         }
+
+        write_buf.instruction = fetch_next(read_buf.pc);
+        access.addr = read_buf.pc;
+        access.type = 0;
+        if (write(fd_cache_sim, &access, sizeof(mem_access)) < 0)
+        {
+            printf("Provjeri kernel logove, error code: %d\n", errno);
+        }
     }
 
 end:
-    close(fd);
+    close(fd_cpu_emulator);
+    close(fd_cache_sim);
     return 0; // Successfully ran
 }

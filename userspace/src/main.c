@@ -5,6 +5,7 @@
 
 #include "cpu_emulator_userspace.h"
 #include "assembler.h"
+#include "cache_simulator.h"
 
 extern uint8_t memory[];  // Simulated memory
 
@@ -20,14 +21,15 @@ int main(int argc, char *argv[])
     instruction *instructions = parse_assembly(path, &num_instructions, &instruction_text);  // Parse assembly code from file
     store_machine_code(memory, MEM_SIZE, instructions, num_instructions);  // Store the parsed instructions in memory
 
-    run("cpu_emulator", instruction_text, num_instructions);
+    run(instruction_text, num_instructions);
 
     for (int i = 0; i < num_instructions; i++)
     {
-        //printf("%d - op1: %x, op2: %llx\n", i, instructions[i].operand1, instructions[i].operand2);
         free(instruction_text[i]);
     }
     free(instruction_text);
+
+    run_cache_sim();
 
     return 0;
 }

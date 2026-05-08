@@ -1,0 +1,1 @@
+savedcmd_/home/filip/Projekti/RTOS/trace_collector_driver/modules.order := {   echo /home/filip/Projekti/RTOS/trace_collector_driver/trace_collector_driver.o; :; } > /home/filip/Projekti/RTOS/trace_collector_driver/modules.order

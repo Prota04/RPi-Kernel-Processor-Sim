@@ -182,8 +182,28 @@ INPUT_WAS_ZERO:
     MOV R3, 0
 INPUT_DONE:
 MOV R3, 5
+
 ; ============================================================
-; SECTION 14: MMIO — signal processor halt
+; Test program za uporedjivanje LRU i OPT algoritama
+; Pattern: Ciklicni pristup podacima (A, B, C, D, E) u petlji
 ; ============================================================
-MOV [0xFFFE], R2    ; Turn off LED
-; Expected: emulator signals completion
+
+MOV R0, 10          ; R0 je broj iteracija petlje (10 puta)
+MOV R1, 42          ; R1 je proizvoljna vrijednost za upis u memoriju
+
+CACHE_LOOP_START:
+    ; Upisujemo istu vrijednost na 5 adresa koje su znatno udaljene.
+    ; Za male konfiguracije keša, ove adrese ce se boriti za isto mjesto (isti set).
+    MOV [0x500], R1    ; Pristup bloku A
+    MOV [0x1000], R1    ; Pristup bloku B
+    MOV [0x1500], R1    ; Pristup bloku C
+    MOV [0x2000], R1    ; Pristup bloku D
+    MOV [0x2500], R1    ; Pristup bloku E
+
+    SUB R0, 1           ; Smanjujemo brojac
+    CMP R0, 0           ; Provjeravamo da li smo stigli do 0
+    JG  CACHE_LOOP_START      ; Ako je R0 > 0, vracamo se na pocetak petlje
+
+; Gasenje procesora (MMIO HALT)
+MOV R2, 0
+MOV [0xFFFE], R2    ; Signaliziraj emulatoru zavrsetak

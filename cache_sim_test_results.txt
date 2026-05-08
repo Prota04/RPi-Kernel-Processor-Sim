@@ -1,0 +1,254 @@
+Test 1:
+Optimalni:
+Simulator keš memorije
+============================================================================
+
+1) Unesite broj nivoa keš memorije (1-3): 3
+2) Unesite veličinu keš linije: 32
+3.1) Unesite asocijativnost prvog nivoa keš memorije (stepen broja 2, max 8): 2
+3.2) Unesite asocijativnost drugog nivoa keš memorije (stepen broja 2, max 8): 4
+3.3) Unesite asocijativnost treceg nivoa keš memorije (stepen broja 2, max 8): 8
+4.1) Unesite veličinu prvog nivoa keš memorije: 64
+4.2) Unesite veličinu drugog nivoa keš memorije: 128
+4.3) Unesite veličinu treceg nivoa keš memorije: 256
+5) Odaberite algoritam zamjene (unesite 1 za optimalni ili 2 za LRU): 1
+
+Uspjesno ucitano 135 memorijskih pristupa.
+
+============================================================================
+   IZVJESTAJ HIJERARHIJSKE SIMULACIJE (3 NIVOA)
+============================================================================
+Ukupno memorijskih pristupa: 135
+
+L1 CACHE:
+  Pogoci:    44
+  Promasaji: 91
+  Miss Rate: 67.41%
+
+L2 CACHE:
+  Pogoci:    29
+  Promasaji: 62
+  Lokalni Miss Rate: 68.13%
+
+L3 CACHE:
+  Pogoci:    42
+  Promasaji: 20
+  Lokalni Miss Rate: 32.26%
+
+GLOBALNA STATISTIKA:
+  Ukupno odlazaka u RAM: 20
+  Globalni Miss Rate:    14.81%
+============================================================================
+
+LRU:
+Simulator keš memorije
+============================================================================
+
+1) Unesite broj nivoa keš memorije (1-3): 3
+2) Unesite veličinu keš linije: 32
+3.1) Unesite asocijativnost prvog nivoa keš memorije (stepen broja 2, max 8): 2
+3.2) Unesite asocijativnost drugog nivoa keš memorije (stepen broja 2, max 8): 4
+3.3) Unesite asocijativnost treceg nivoa keš memorije (stepen broja 2, max 8): 8
+4.1) Unesite veličinu prvog nivoa keš memorije: 64
+4.2) Unesite veličinu drugog nivoa keš memorije: 128
+4.3) Unesite veličinu treceg nivoa keš memorije: 256
+5) Odaberite algoritam zamjene (unesite 1 za optimalni ili 2 za LRU): 2
+
+Uspjesno ucitano 135 memorijskih pristupa.
+
+============================================================================
+   IZVJESTAJ HIJERARHIJSKE SIMULACIJE (3 NIVOA)
+============================================================================
+Ukupno memorijskih pristupa: 135
+
+L1 CACHE:
+  Pogoci:    44
+  Promasaji: 91
+  Miss Rate: 67.41%
+
+L2 CACHE:
+  Pogoci:    0
+  Promasaji: 91
+  Lokalni Miss Rate: 100.00%
+
+L3 CACHE:
+  Pogoci:    0
+  Promasaji: 91
+  Lokalni Miss Rate: 100.00%
+
+GLOBALNA STATISTIKA:
+  Ukupno odlazaka u RAM: 91
+  Globalni Miss Rate:    67.41%
+============================================================================
+
+Test 2:
+Optimalni:
+Simulator keš memorije
+============================================================================
+
+1) Unesite broj nivoa keš memorije (1-3): 3
+2) Unesite veličinu keš linije: 32
+3.1) Unesite asocijativnost prvog nivoa keš memorije (stepen broja 2, max 8): 1
+3.2) Unesite asocijativnost drugog nivoa keš memorije (stepen broja 2, max 8): 1
+3.3) Unesite asocijativnost treceg nivoa keš memorije (stepen broja 2, max 8): 1
+4.1) Unesite veličinu prvog nivoa keš memorije: 256
+4.2) Unesite veličinu drugog nivoa keš memorije: 512
+4.3) Unesite veličinu treceg nivoa keš memorije: 1010
+Veličina ovog nivoa mora biti stepen broja 2 između 32 i 8192
+4.3) Unesite veličinu treceg nivoa keš memorije: 1024
+5) Odaberite algoritam zamjene (unesite 1 za optimalni ili 2 za LRU): 1
+
+Uspjesno ucitano 135 memorijskih pristupa.
+
+============================================================================
+   IZVJESTAJ HIJERARHIJSKE SIMULACIJE (3 NIVOA)
+============================================================================
+Ukupno memorijskih pristupa: 135
+
+L1 CACHE:
+  Pogoci:    71
+  Promasaji: 64
+  Miss Rate: 47.41%
+
+L2 CACHE:
+  Pogoci:    0
+  Promasaji: 64
+  Lokalni Miss Rate: 100.00%
+
+L3 CACHE:
+  Pogoci:    0
+  Promasaji: 64
+  Lokalni Miss Rate: 100.00%
+
+GLOBALNA STATISTIKA:
+  Ukupno odlazaka u RAM: 64
+  Globalni Miss Rate:    47.41%
+============================================================================
+
+LRU:
+Simulator keš memorije
+============================================================================
+
+1) Unesite broj nivoa keš memorije (1-3): 3
+2) Unesite veličinu keš linije: 32
+3.1) Unesite asocijativnost prvog nivoa keš memorije (stepen broja 2, max 8): 1
+3.2) Unesite asocijativnost drugog nivoa keš memorije (stepen broja 2, max 8): 1
+3.3) Unesite asocijativnost treceg nivoa keš memorije (stepen broja 2, max 8): 1
+4.1) Unesite veličinu prvog nivoa keš memorije: 256
+4.2) Unesite veličinu drugog nivoa keš memorije: 512
+4.3) Unesite veličinu treceg nivoa keš memorije: 1024
+5) Odaberite algoritam zamjene (unesite 1 za optimalni ili 2 za LRU): 2
+
+Uspjesno ucitano 135 memorijskih pristupa.
+
+============================================================================
+   IZVJESTAJ HIJERARHIJSKE SIMULACIJE (3 NIVOA)
+============================================================================
+Ukupno memorijskih pristupa: 135
+
+L1 CACHE:
+  Pogoci:    71
+  Promasaji: 64
+  Miss Rate: 47.41%
+
+L2 CACHE:
+  Pogoci:    0
+  Promasaji: 64
+  Lokalni Miss Rate: 100.00%
+
+L3 CACHE:
+  Pogoci:    0
+  Promasaji: 64
+  Lokalni Miss Rate: 100.00%
+
+GLOBALNA STATISTIKA:
+  Ukupno odlazaka u RAM: 64
+  Globalni Miss Rate:    47.41%
+============================================================================
+
+Test 3:
+Optimalni:
+Simulator keš memorije
+============================================================================
+
+1) Unesite broj nivoa keš memorije (1-3): 3
+2) Unesite veličinu keš linije: 64
+3.1) Unesite asocijativnost prvog nivoa keš memorije (stepen broja 2, max 8): 2048
+Asocijativnost mora biti 1, 2, 4 ili 8!
+3.1) Unesite asocijativnost prvog nivoa keš memorije (stepen broja 2, max 8): 4
+3.2) Unesite asocijativnost drugog nivoa keš memorije (stepen broja 2, max 8): 8
+3.3) Unesite asocijativnost treceg nivoa keš memorije (stepen broja 2, max 8): 8
+4.1) Unesite veličinu prvog nivoa keš memorije: 2048
+4.2) Unesite veličinu drugog nivoa keš memorije: 4096
+4.3) Unesite veličinu treceg nivoa keš memorije: 8192
+5) Odaberite algoritam zamjene (unesite 1 za optimalni ili 2 za LRU): 1
+
+Uspjesno ucitano 135 memorijskih pristupa.
+
+============================================================================
+   IZVJESTAJ HIJERARHIJSKE SIMULACIJE (3 NIVOA)
+============================================================================
+Ukupno memorijskih pristupa: 135
+
+L1 CACHE:
+  Pogoci:    127
+  Promasaji: 8
+  Miss Rate: 5.93%
+
+L2 CACHE:
+  Pogoci:    0
+  Promasaji: 8
+  Lokalni Miss Rate: 100.00%
+
+L3 CACHE:
+  Pogoci:    0
+  Promasaji: 8
+  Lokalni Miss Rate: 100.00%
+
+GLOBALNA STATISTIKA:
+  Ukupno odlazaka u RAM: 8
+  Globalni Miss Rate:    5.93%
+============================================================================
+
+LRU:
+Simulator keš memorije
+============================================================================
+
+1) Unesite broj nivoa keš memorije (1-3): 3
+2) Unesite veličinu keš linije: 64
+3.1) Unesite asocijativnost prvog nivoa keš memorije (stepen broja 2, max 8): 4
+3.2) Unesite asocijativnost drugog nivoa keš memorije (stepen broja 2, max 8): 8
+3.3) Unesite asocijativnost treceg nivoa keš memorije (stepen broja 2, max 8): 8
+4.1) Unesite veličinu prvog nivoa keš memorije: 2048
+4.2) Unesite veličinu drugog nivoa keš memorije: 4096
+4.3) Unesite veličinu treceg nivoa keš memorije: 8192
+5) Odaberite algoritam zamjene (unesite 1 za optimalni ili 2 za LRU): 2
+
+Uspjesno ucitano 135 memorijskih pristupa.
+
+============================================================================
+   IZVJESTAJ HIJERARHIJSKE SIMULACIJE (3 NIVOA)
+============================================================================
+Ukupno memorijskih pristupa: 135
+
+L1 CACHE:
+  Pogoci:    127
+  Promasaji: 8
+  Miss Rate: 5.93%
+
+L2 CACHE:
+  Pogoci:    0
+  Promasaji: 8
+  Lokalni Miss Rate: 100.00%
+
+L3 CACHE:
+  Pogoci:    0
+  Promasaji: 8
+  Lokalni Miss Rate: 100.00%
+
+GLOBALNA STATISTIKA:
+  Ukupno odlazaka u RAM: 8
+  Globalni Miss Rate:    5.93%
+============================================================================
+
+
