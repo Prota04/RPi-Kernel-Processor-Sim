@@ -1,1 +1,0 @@
-savedcmd_/home/filip/Projekti/RTOS/trace_collector_driver/Module.symvers :=  scripts/mod/modpost -M -m -a      -o /home/filip/Projekti/RTOS/trace_collector_driver/Module.symvers -n -T /home/filip/Projekti/RTOS/trace_collector_driver/modules.order -i Module.symvers -e 
