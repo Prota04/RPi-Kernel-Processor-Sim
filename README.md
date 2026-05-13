@@ -1,262 +1,100 @@
-# Raspberry Pi CPU Emulator Driver
-
-A Linux kernel project that emulates a small custom CPU on a Raspberry Pi and exposes it through a character device, with a companion userspace assembler and runner.
-
-The project combines **kernel development**, **embedded I/O**, and **instruction set emulation** in one system. Programs are assembled in userspace, sent to the kernel driver instruction by instruction, and executed with support for memory access, branching, GPIO-backed input/output, and simple execution control through hardware switches.
+# Raspberry Pi CPU Emulator & Cache Simulator
+A Linux kernel project that emulates a custom CPU on a Raspberry Pi, exposes it through character devices, and tracks memory accesses for post-execution cache simulation. 
+The project combines kernel module development, embedded I/O, instruction set emulation, and cache performance analysis. Programs are assembled in userspace, sent to the kernel driver instruction by instruction, and executed with support for memory access, branching, and GPIO-backed input/output.
 
 ---
 
 ## Highlights
-
-- **Linux kernel module** implementing a custom CPU execution engine
-- **Character device interface** for communication between userspace and kernelspace
-- **Userspace assembler** that parses custom assembly into machine instructions
-- **Userspace execution driver** that coordinates instruction fetch, memory access, and MMIO requests
-- **GPIO integration** for LEDs, run/pause control, and simple input/output devices
-- **Configurable clock speed** through a kernel module parameter
+* **CPU Emulator (Kernel Module)**: Implements a custom CPU execution engine.
+* **Trace Collector (Kernel Module)**: Intercepts and buffers memory access traces in chunks of 256 entries for performance analysis.
+* **Character Device Interfaces**: Uses `/dev/cpu_emulator` for execution and `/dev/trace_collector` for memory trace retrieval.
+* **Userspace Assembler**: Parses custom assembly into an 11-byte machine instruction format.
+* **Cache Simulator**: Runs in userspace after program execution to analyze the collected memory traces.
+* **GPIO Integration**: Supports LEDs, run/pause control, step signals, and simple input/output devices.
 
 ---
 
-## System Overview
+## System Architecture
+The project is split into multiple interacting layers:
+1. **Assembler (Userspace)**: Parses assembly files from the `./doc/` directory and converts them into machine code.
+2. **Execution Client (Userspace)**: Loads instructions into simulated memory, communicates with `/dev/cpu_emulator`, services memory/MMIO requests, and triggers the cache simulation upon completion.
+3. **CPU Emulator (Kernelspace)**: Executes instructions, updates CPU state, handles GPIO-based control flow, and exposes the CPU device interface.
+4. **Trace Collector (Kernelspace)**: Safely buffers memory access events generated during CPU execution using a chunk-based linked list protected by a mutex.
 
-The project is split into three main layers:
+---
 
-1. **Assembler (userspace)**  
-   Parses assembly source and converts it into the project’s machine instruction format.
+## CPU Model & Instruction Set
+The emulator implements a compact CPU with 4 general-purpose registers (`R0` to `R3`), a Program Counter (`PC`), and a Flags Register (`FR`) supporting Carry (`CF`), Auxiliary Carry (`AF`), Zero (`ZF`), Sign (`SF`), and Overflow (`OF`) flags.
 
-2. **Execution client (userspace)**  
-   Loads instructions into simulated memory, communicates with `/dev/cpu_emulator`, and services memory/MMIO requests returned by the kernel driver.
+### Instruction Format
+Each instruction occupies 11 bytes:
+ opcode (1) | mode (1) | operand1 (1) | operand2 (8) |
+### Supported Instructions
+* **Arithmetic/Logic**: `ADD`, `SUB`, `AND`, `OR`, `NOT`
+* **Data Movement**: `MOV`
+* **Branching/Comparison**: `CMP`, `JMP`, `JE`, `JG`, `JL`
 
-3. **CPU emulator (kernel module)**  
-   Executes instructions, updates CPU state, handles GPIO-based control flow, and exposes the device interface.
+**Addressing Modes**: `IMMEDIATE`, `REGISTER`, `DIRECT_LOAD`, `DIRECT_STORE`, `LABEL`
 
-This gives the project a clean separation of responsibilities:
+---
 
-- parsing and program preparation in userspace
-- execution state and hardware interaction in kernelspace
+## Hardware Integration (GPIO & MMIO)
+The CPU module communicates with the physical world via Raspberry Pi GPIO pins.
+
+* **LEDs (Register State)**: `GPIO17`, `GPIO27`, `GPIO22`, `GPIO26`
+* **Switches**:
+  * `GPIO23`: Run switch (Triggers execution)
+  * `GPIO24`: Pause switch (Halts execution temporarily)
+  * `GPIO25`: Input device / Step signal (Advances execution by one instruction when paused)
+* **Output**: `GPIO16` (MMIO output device)
+
+**MMIO Addresses**:
+* `0xFFFD`: MMIO input
+* `0xFFFE`: MMIO output
+* `0xFFFF`: Halt marker
 
 ---
 
 ## Repository Structure
-
 ```text
 .
 ├── cpu_driver/
 │   ├── cpu_emulator_driver.c    # Kernel module implementing the CPU
-│   └── Makefile                 # Kernel module build rules
+│   └── Makefile                 
+├── trace_collector_driver/
+│   ├── trace_collector_driver.c # Kernel module for logging memory traces
+│   └── Makefile                 
 ├── userspace/
-│   ├── Makefile                 # Userspace build rules
-│   └── src/
-│       ├── assembler.c          # Custom assembler
-│       ├── cpu_emulator_userspace.c
-│       └── main.c               # Userspace entry point
+│   ├── src/
+│   │   ├── main.c               # Userspace entry point & cache sim trigger
+│   │   ├── assembler.c          # Custom assembler
+│   │   ├── cache_simulator.c    # Post-execution cache simulator
+│   │   └── cpu_emulator_userspace.c
+│   ├── inc/                     # Shared userspace headers
+│   ├── doc/                     # Assembly test files
+│   └── Makefile                 
 ├── cpu_uapi.h                   # Shared user/kernel interface definitions
-├── run.sh                       # Convenience script for loading and running
-└── todo.txt                     # Planned improvements
+└── run.sh                       # Automation script for loading modules and executing
 ```
 
 ---
 
-## CPU Model
+## Build & Run Instructions
+A helper script `run.sh` is provided to automate module loading and program execution.
 
-The emulator currently implements a compact CPU with:
-
-- **4 general-purpose registers**: `R0` to `R3`
-- **Program counter**: `PC`
-- **Flags register**: `FR`
-
-### Supported flags
-
-- `CF` — Carry Flag
-- `AF` — Auxiliary Carry Flag
-- `ZF` — Zero Flag
-- `SF` — Sign Flag
-- `OF` — Overflow Flag
-
----
-
-## Instruction Format
-
-Each instruction occupies **11 bytes**.
-
-```text
-| opcode (1) | mode (1) | operand1 (1) | operand2 (8) |
-```
-
-The shared layout is defined in `cpu_uapi.h`.
-
----
-
-## Supported Instruction Set
-
-### Arithmetic and logic
-
-- `ADD`
-- `SUB`
-- `AND`
-- `OR`
-- `NOT`
-
-### Data movement
-
-- `MOV`
-
-### Comparison and branching
-
-- `CMP`
-- `JMP`
-- `JE`
-- `JG`
-- `JL`
-
----
-
-## Addressing Modes
-
-The current interface defines these modes:
-
-- `IMMEDIATE`
-- `REGISTER`
-- `DIRECT_LOAD`
-- `DIRECT_STORE`
-- `LABEL`
-
-These are shared between the assembler, userspace runtime, and kernel driver through `cpu_uapi.h`.
-
----
-
-## Execution Flow
-
-At a high level, execution works like this:
-
-1. An assembly program is parsed in userspace.
-2. Instructions are stored in simulated memory.
-3. The userspace runner opens `/dev/cpu_emulator`.
-4. The next instruction is sent to the kernel driver.
-5. The kernel executes it and returns one of the following:
-   - success
-   - halt
-   - pending memory read
-   - pending memory write
-   - pending MMIO read
-6. Userspace services the request when needed and continues execution.
-
-This handshake makes the driver responsible for CPU semantics while keeping the backing memory model simple and easy to inspect in userspace.
-
----
-
-## GPIO Integration
-
-The kernel module is wired to Raspberry Pi GPIO pins for simple physical interaction.
-
-### LEDs
-
-- `GPIO17` → LED 1
-- `GPIO27` → LED 2
-- `GPIO22` → LED 3
-- `GPIO26` → LED 4
-
-The LEDs are used to reflect register state changes during execution.
-
-### Switches and I/O
-
-- `GPIO23` → Run switch
-- `GPIO24` → Pause switch
-- `GPIO25` → Input device / step signal
-- `GPIO16` → Output device
-
-### MMIO addresses
-
-- `0xFFF0` → MMIO region start
-- `0xFFFD` → MMIO input
-- `0xFFFE` → MMIO output
-- `0xFFFF` → Halt marker
-
----
-
-## Build Instructions
-
-### Kernel module
-
-From the driver directory:
-
-```bash
-cd cpu_driver
-make
-```
-
-### Userspace tools
-
-From the userspace directory:
-
-```bash
-cd userspace
-make
-```
-
----
-
-## Running the Project
-
-A helper script is included:
-
+### Usage
 ```bash
 ./run.sh [clock_speed_ms] <assembly_file>
 ```
+> **Note:** The assembly file should be located in the `userspace/doc/` directory.
 
 ### Example
-
 ```bash
-./run.sh 200 demo.asm
+./run.sh 200 test1.txt
 ```
 
-What the script does:
-
-1. unloads any previously loaded `cpu_emulator_driver`
-2. loads the new kernel module
-3. optionally sets `clock_speed`
-4. launches the userspace runner
-
-If no clock speed is provided, the module uses the default value of **500 ms**.
-
----
-
-## Character Device Interface
-
-The project uses a character device named:
-
-```text
-/dev/cpu_emulator
-```
-
-The interface between userspace and kernelspace is defined in `cpu_uapi.h` through shared structures such as:
-
-- `instruction`
-- `write_value`
-- `read_value`
-
-This shared UAPI header keeps both sides synchronized and makes the project easier to evolve.
-
----
-
-## Why This Project Is Interesting
-
-This is not just a simple emulator. It is a compact demonstration of several important systems concepts working together:
-
-- building a **real Linux kernel module**
-- exposing functionality through a **device file**
-- designing a **custom ISA**
-- coordinating **userspace and kernelspace responsibilities**
-- using **GPIO-backed hardware control** on Raspberry Pi
-- handling **execution timing, pause, and stepping** in a low-level system
-
-It is a strong educational project for courses in:
-
-- operating systems
-- embedded systems
-- computer architecture
-- device driver development
-
-## License
-
-This repository appears to be an academic / educational project. Add a formal license here if you plan to publish or share it more broadly.
+### What the script does
+1. Removes any previously loaded `cpu_emulator_driver` and `trace_collector_driver` modules.
+2. Loads the `cpu_emulator_driver.ko` module, optionally setting the `clock_speed` parameter (defaults to 500ms).
+3. Loads the `trace_collector_driver.ko` module.
+4. Launches the userspace executable which parses the assembly, executes it, and finally runs the cache simulation on the collected memory access traces.
